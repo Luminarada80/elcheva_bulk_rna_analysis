@@ -1,0 +1,10 @@
+*.fastq
+*.fasta
+*.csv
+*.tsv
+*.bam
+*.sam
+ILLUMINACLIP*
+LEADING*
+*trimmomatic-0.39
+cufflinks*
