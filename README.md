@@ -1,6 +1,6 @@
 # Bulk RNA-seq Alignment and Analysis
 
-### Steps:
+### Pipeline Steps:
 1. Runs an initial [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) quality assessment of the reads
 2. Trims adapter sequences using [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic)
 3. Creates a second QC analysis of the trimmed reads
