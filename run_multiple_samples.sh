@@ -33,10 +33,6 @@ SAMPLE_NAMES=(
 )
 
 for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
-    while [ "$(squeue -u "$USER" -h -t PD,R -n 'RNAseqpipeline_*' -o '%i' | wc -l)" -ge "$MAX_JOBS_IN_QUEUE" ]; do
-        echo "[INFO] Max jobs ($MAX_JOBS_IN_QUEUE) running/pending. Sleeping 60s..."
-        sleep 60
-    done
 
     LOGDIR=${BASE_DIR}/LOGS/${SAMPLE_NAME}
     mkdir -p $LOGDIR
@@ -47,7 +43,5 @@ for SAMPLE_NAME in "${SAMPLE_NAMES[@]}"; do
         --output="${LOGDIR}/${SAMPLE_NAME}.log" \
         --error="${LOGDIR}/${SAMPLE_NAME}.err" \
         "${BASE_DIR}/RNAseqpipeline.sh"
-
-    sleep 2
 
 done

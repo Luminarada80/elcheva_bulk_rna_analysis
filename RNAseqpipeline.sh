@@ -23,8 +23,8 @@ FASTQ_DATA_DIR="${DATA_DIR}/FASTQ_FILES/RAW/BATCH_2025_01"
 
 TEST_FILE_R1="${FASTQ_DATA_DIR}/${SAMPLE_NAME}_R1.fastq.gz" # Only use R1
 
-RESULTS_DIR="/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/${SAMPLE_NAME}" #
-OUTPUT_DIR="${RESULTS_DIR}/read_alignment"
+RESULTS_DIR="/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/" #
+OUTPUT_DIR="${RESULTS_DIR}/read_alignment/${SAMPLE_NAME}"
 mkdir -p $OUTPUT_DIR
 
 # ----- Genome Annotation Files -----
@@ -50,7 +50,7 @@ SECONDS=0
 # Notes:
 #  1. Only R1 reads are used, as R2 reads start with poly(T) and are low quality
 
-echo "Output Parent Directory: ${OUTPUT_DIR}"
+# echo "Output Parent Directory: ${OUTPUT_DIR}"
 
 # Run FastQC
 echo "Running FastQC read quality assessment"
@@ -128,7 +128,7 @@ featureCounts \
     -o "${OUTPUT_DIR}/06_featureCounts/${SAMPLE_NAME}_gene_counts.txt" \
     "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.bam"
 
-mkdir -p ${BASE}/gene_counts
+mkdir -p ${RESULTS_DIR}/gene_counts
 mv "${OUTPUT_DIR}/06_featureCounts/${SAMPLE_NAME}_gene_counts.txt" "${RESULTS_DIR}/gene_counts/${SAMPLE_NAME}_gene_counts.txt"
 
 echo "featureCounts done."
