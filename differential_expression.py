@@ -151,14 +151,13 @@ def filter_out_non_protein_coding_genes(expr_matrix_df: pd.DataFrame) -> pd.Data
 
     return expr_matrix_df
 
+
 if __name__ == "__main__":
     expr_matrix_df = build_sample_expression_matrix(gene_count_dir)
     
     expr_matrix_df = filter_out_non_protein_coding_genes(expr_matrix_df)
     
     expr_matrix_df, metadata = check_expression_matrix_samples_match_metadata(expr_matrix_df, metadata)
-    
-    annotation_df = pd.read_parquet(annotation_file)
     
     # Only keep genes that are expressed in more than 2 samples
     group = metadata.loc[expr_matrix_df.index, "Group_Name"]
@@ -174,7 +173,10 @@ if __name__ == "__main__":
     
     dds.deseq2()
     
+    # Use the metadata file to find the different comparisons we want to run
     comparisons = [comparison_df.iloc[i, :].to_list() for i in range(len(comparison_df))]
+    
+    
     
     deseq_stat_results = DeseqStats(dds, n_cpus=8, contrast = ('Group_Name', comparisons[0][0], comparisons[0][1]))
     deseq_stat_results.summary()
