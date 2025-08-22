@@ -76,7 +76,64 @@ n_comp = nrow(df.comparisons)
 n_annot = nrow(df.sample_annotation)
 head(df.sample_annotation)
 
-Sample_Names = df.sample_annotation$Sample_Name
+## --- Harmonize IDs & collapse FPKM to gene-level ---
+Sample_Names <- df.sample_annotation$Sample_Name
+
+
+# 0) use canonical sample names from your annotation
+normalize_id <- function(x) {
+  x <- sub("\\.gene$", "", x)     # remove .gene
+  x <- sub("_S\\d+$", "", x)      # remove _S20 etc
+  x
+}
+
+# 1) normalize column names in counts and FPKM (you already have normalize_id)
+colnames(df.read_counts) <- normalize_id(colnames(df.read_counts))
+
+meta_cols <- intersect(c("tracking_id","Gene_id","gene_id","gene_short_name","locus"),
+                       colnames(df.fpkm))
+expr_cols_fpkm <- setdiff(colnames(df.fpkm), meta_cols)
+new_fpkm_names <- colnames(df.fpkm)
+new_fpkm_names[match(expr_cols_fpkm, colnames(df.fpkm))] <- normalize_id(expr_cols_fpkm)
+colnames(df.fpkm) <- new_fpkm_names
+
+# expression columns actually used
+expr_cols <- intersect(colnames(df.fpkm), Sample_Names)
+if (length(expr_cols) == 0) stop("No FPKM columns match Sample_Names after normalization.")
+
+# 2) pick the gene ID column and strip version to match counts
+gene_col <- if ("gene_id" %in% names(df.fpkm)) df.fpkm$gene_id else df.fpkm$Gene_id
+if (is.null(gene_col)) stop("FPKM table has no gene_id / Gene_id column.")
+gene_novers <- sub("\\..*$", "", as.character(gene_col))
+
+# 3) collapse FPKM to gene level (mean across transcripts for the same gene)
+expr_mat <- as.matrix(df.fpkm[, expr_cols, drop = FALSE])
+fc <- as.factor(gene_novers)
+fpkm_sum <- rowsum(expr_mat, group = fc)                # sum per gene
+n_per_gene <- as.numeric(table(fc))                     # transcripts per gene
+fpkm_gene <- fpkm_sum / n_per_gene                      # mean FPKM per gene
+
+# replace df.fpkm with a gene-level matrix; rows are unique Ensembl IDs (no version)
+df.fpkm <- as.data.frame(fpkm_gene, check.names = FALSE)
+
+# 4) make counts use the same (no-version) gene IDs
+rownames(df.read_counts) <- sub("\\..*$", "", rownames(df.read_counts))
+
+# 5) ensure same sample columns & order
+missing_f <- setdiff(Sample_Names, colnames(df.fpkm))
+missing_c <- setdiff(Sample_Names, colnames(df.read_counts))
+if (length(missing_f)) stop("Missing in FPKM: ", paste(missing_f, collapse = ", "))
+if (length(missing_c)) stop("Missing in counts: ", paste(missing_c, collapse = ", "))
+
+df.fpkm        <- df.fpkm[, Sample_Names, drop = FALSE]
+df.read_counts <- df.read_counts[, Sample_Names, drop = FALSE]
+
+# 6) final sanity
+# stopifnot(!anyDuplicated(rownames(df.fpkm)))
+# stopifnot(!anyDuplicated(rownames(df.read_counts)))
+overlap_ids <- length(intersect(rownames(df.fpkm), rownames(df.read_counts)))
+if (overlap_ids == 0) stop("No row ID overlap between FPKM and counts after harmonization.")
+
 
 test_type = 'glmQLFTest'
 
