@@ -3,11 +3,11 @@ batch_name="2025_01"
 
 meta_data_dir=/gpfs/Labs/Uzun/METADATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/
 batch_sample_list_file=/gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/sample_names_list.txt
-batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/FASTQ_FILES.TRIMMED/RAW/$batch_name/
-batch_bam_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
+batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/FASTQ_FILES.TRIMMED/BATCH_${batch_name}
+batch_bam_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
 
-batch_fpkm_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/FPKM/${batch_name}/INDIVIDUAL_SAMPLES/
-batch_read_count_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/READ_COUNTS/${batch_name}/INDIVIDUAL_SAMPLES/
+batch_fpkm_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/FPKM/${batch_name}/INDIVIDUAL_SAMPLES/
+batch_read_count_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/READ_COUNTS/${batch_name}/INDIVIDUAL_SAMPLES/
 
 genome_index_dir=/gpfs/Labs/Uzun/DATA/GENOMES/INDEX/HUMAN/HG38/STAR/
 gene_annot_gtf=/gpfs/Labs/Uzun/DATA/GENOMES/ANNOTATION/HUMAN/HG38/GENE_ANNOT/gencode.v38.annotation.gtf
@@ -21,7 +21,7 @@ mkdir -p $batch_bam_dir
 mkdir -p $batch_bam_dir/TEMP_SORTING # for sorting
 mkdir -p $batch_fpkm_dir
 mkdir -p $batch_read_count_dir
-mkdir -p $batch_read_stats_dir
+# mkdir -p $batch_read_stats_dir
 
 IFSs=$'\n' read -d '' -r -a sample_names < $batch_sample_list_file
 len=${#sample_names[@]}
@@ -67,7 +67,7 @@ do
   echo "module load STAR/2.7.3a">> $job_file
   echo "STAR --genomeDir $genome_index_dir \\">> $job_file
   echo "--runThreadN 8 \\">> $job_file
-  echo "--readFilesIn ${sample_name}_R1.fastq.gz ${sample_name}_R2.fastq.gz \\">> $job_file
+  echo "--readFilesIn ${sample_name}_R1_paired.fastq.gz ${sample_name}_R2_paired.fastq.gz \\">> $job_file
   echo "--outFileNamePrefix $batch_bam_dir/${sample_name}_ \\">> $job_file
   echo "--outSAMtype BAM SortedByCoordinate \\">> $job_file
   echo "--outSJfilterReads Unique \\">> $job_file
@@ -94,17 +94,17 @@ do
   echo "module load cufflinks/2.2.1">> $job_file
   echo "rm -r $batch_fpkm_dir/$sample_name/">> $job_file
   echo "cufflinks -p 8 --library-type fr-firststrand  -o $batch_fpkm_dir/$sample_name/  -G $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam" >> $job_file
-  echo "python /gpfs/Labs/Uzun/SCRIPTS/COMMON/RNA_SEQ/CURRENT/Select_Greater_FPKM.py $batch_fpkm_dir/$sample_name/genes.fpkm_tracking > $batch_fpkm_dir/$sample_name/genes.fpkm_tracking.max.txt" >> $job_file
+  echo "python /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/Select_Greater_FPKM.py $batch_fpkm_dir/$sample_name/genes.fpkm_tracking > $batch_fpkm_dir/$sample_name/genes.fpkm_tracking.max.txt" >> $job_file
   echo "echo FPKM computed.">> $job_file
 
   #Compute integer read counts with featureCounts (Rsubread)
   mkdir -p $batch_fpkm_dir/$sample_name  
   echo "echo Running featureCounts for read counts.">> $job_file 
-  echo "module load R/4.0.3">> $job_file
+  echo "module load R/4.3.3-cisTopic">> $job_file
   echo "mkdir -p $batch_read_count_dir/GENE_LEVEL">> $job_file
-  echo "Rscript /gpfs/Labs/Uzun/SCRIPTS/COMMON/RNA_SEQ/CURRENT/run_featureCounts.R gene $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam $batch_read_count_dir/GENE_LEVEL/  ${sample_name}">> $job_file
+  echo "Rscript /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/run_featureCounts.R gene $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam $batch_read_count_dir/GENE_LEVEL/  ${sample_name}">> $job_file
   echo "mkdir -p $batch_read_count_dir/TRANSCRIPT_LEVEL">> $job_file
-  echo "Rscript /gpfs/Labs/Uzun/SCRIPTS/COMMON/RNA_SEQ/CURRENT/run_featureCounts.R transcript $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam $batch_read_count_dir/TRANSCRIPT_LEVEL/  ${sample_name}">> $job_file
+  echo "Rscript /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/run_featureCounts.R transcript $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam $batch_read_count_dir/TRANSCRIPT_LEVEL/  ${sample_name}">> $job_file
   echo "echo Read count computed.">> $job_file
 
 
