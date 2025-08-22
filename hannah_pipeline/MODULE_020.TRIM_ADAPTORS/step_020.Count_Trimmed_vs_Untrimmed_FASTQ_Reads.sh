@@ -5,7 +5,7 @@ raw_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/RAW/BA
 trim_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/FASTQ_FILES.TRIMMED/BATCH_${batch_name}
 
 # Output directory
-output_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/READ_COUNTS_TRIMMED/${batch_name}/
+output_dir=/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/${project_name}/READ_COUNTS_TRIMMED/${batch_name}/
 
 # Create output directory if it doesn't exist
 mkdir -p "$output_dir"
@@ -30,10 +30,10 @@ count_reads() {
 }
 
 # Count reads in non-trimmed files
-count_reads "$fastq_dir" "$reads_counts"
+count_reads "$raw_fastq_dir" "$reads_counts"
 
 # Count reads in trimmed files
-count_reads "$trimmed_dir" "$trimmed_reads_counts"
+count_reads "$trim_fastq_dir" "$trimmed_reads_counts"
 
 # Combine the results into a single file
 paste "$reads_counts" "$trimmed_reads_counts" > "$combined_counts"
