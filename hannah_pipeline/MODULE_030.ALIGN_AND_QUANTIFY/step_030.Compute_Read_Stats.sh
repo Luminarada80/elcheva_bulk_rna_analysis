@@ -3,11 +3,11 @@ batch_name="2025_01"
 
 meta_data_dir=/gpfs/Labs/Uzun/METADATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/
 batch_sample_list_file=/gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/sample_names_list.txt
-batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/FASTQ_FILES.TRIMMED/RAW/$batch_name/
-batch_bam_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
+batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/FASTQ_FILES.TRIMMED/BATCH_${batch_name}
+batch_bam_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
 
 
-batch_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/READ_STATS/${batch_name}/INDIVIDUAL_SAMPLES/
+batch_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/$project_name/READ_STATS/${batch_name}/INDIVIDUAL_SAMPLES/
 
 genome_index_dir=/gpfs/Labs/Uzun/DATA/GENOMES/INDEX/HUMAN/HG38/STAR/
 gene_annot_gtf=/gpfs/Labs/Uzun/DATA/GENOMES/ANNOTATION/HUMAN/HG38/GENE_ANNOT/gencode.v38.annotation.gtf
@@ -58,12 +58,13 @@ do
   echo "#SBATCH --cpus-per-task=9">> $job_file
   echo "#SBATCH --mem-per-cpu=20G">> $job_file
   #echo "#SBATCH --mem-per-cpu=10G">> $job_file
-  echo "srun hostname">> $job_file
   echo ".  /etc/profile.d/modules.sh">> $job_file
+
+  echo "source activate bioinformatics">> $job_file
 
   # Filter unique reads
   echo "cd $batch_bam_dir">> $job_file
-  echo "module load samtools/1.10.0">> $job_file
+  echo "module load samtools/1.13">> $job_file
   echo "mkdir -p TEMP_SORTING/${sample_name}/">> $job_file	
   echo "samtools sort -T TEMP_SORTING/${sample_name}/ -o ${sample_name}_Aligned.sorted.bam ${sample_name}_Aligned.bam">> $job_file
   echo "samtools index ${sample_name}_Aligned.sorted.bam">> $job_file
@@ -72,8 +73,8 @@ do
   # Compute read (intron/exon/intergenic) statistics 
   echo "echo Computing read stats.">> $job_file
   echo "cd $batch_bam_dir">> $job_file
-  echo "module load python/2.7.15">> $job_file
-  echo "python /gpfs/Labs/Uzun/SCRIPTS/COMMON/NGS/CURRENT/ReadStats.py $batch_bam_dir/${sample_name}_Aligned.sorted.bam $gene_annot_bed $batch_read_stats_dir/${sample_name}.Read_stats.txt  ">> $job_file
+  # echo "module load python/2.7.15">> $job_file
+  echo "python /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/ReadStats.py $batch_bam_dir/${sample_name}_Aligned.sorted.bam $gene_annot_bed $batch_read_stats_dir/${sample_name}.Read_stats.txt  ">> $job_file
   echo "echo Read stats computed.">> $job_file
   sbatch $job_file
 

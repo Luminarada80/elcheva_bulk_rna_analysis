@@ -3,10 +3,10 @@ batch_name="2025_01"
 
 meta_data_dir=/gpfs/Labs/Uzun/METADATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/
 batch_sample_list_file=/gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/sample_names_list.txt
-batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/FASTQ_FILES.TRIMMED/RAW/$batch_name/
-batch_bam_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
+batch_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/FASTQ_FILES.TRIMMED/BATCH_${batch_name}
+batch_bam_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/BAM_FILES/$batch_name/
 
-result_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/STAR_ALIGNMENT_STATISTICS/
+result_dir=/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/$project_name/STAR_ALIGNMENT_STATISTICS/
 mkdir -p $result_dir
 ####
 
