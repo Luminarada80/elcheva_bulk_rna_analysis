@@ -1,8 +1,8 @@
 project_name=2025.NYNRIN.DOD.ELCHEVA
 batch_name="2025_01"
 
-individual_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/READ_STATS/${batch_name}/INDIVIDUAL_SAMPLES/
-merged_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/READ_STATS/MERGED/
+individual_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/$project_name/READ_STATS/${batch_name}/INDIVIDUAL_SAMPLES/
+merged_read_stats_dir=/gpfs/Labs/Uzun/RESULTS/GRANT_APPS/$project_name/READ_STATS/MERGED/
 
 mkdir -p $merged_read_stats_dir
 
@@ -37,6 +37,7 @@ sed -i 's/\.\///g' results_01.txt
 
 cat results_01.txt
 
+module load R/4.3.3-cisTopic
 # Transpose the result matrix
 cat results_01.txt | Rscript -e 'write.table(t(read.table("stdin",sep="\t",quote="",comment.char="")),sep="\t",quote=F,col.names=F,row.names=F)' > $merged_read_stats_dir/Read_Statistics.${batch_name}.txt
 
