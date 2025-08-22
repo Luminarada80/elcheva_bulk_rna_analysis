@@ -16,19 +16,19 @@ plot_dir = result_dir
 gene_annot_dir = paste0(data_dir,'/GENOMES/ANNOTATION/HUMAN/HG38/GENE_ANNOT/')
 biomart_rds =  paste0(gene_annot_dir,"/Biomart_Gene_Table.Clean.rds")
 
-project_data_dir = paste0(data_dir,'/PROJECTS/',project_name)
-project_metadata_dir = paste0(metadata_dir,'/PROJECTS/',project_name)
+project_data_dir = paste0(data_dir,'/GRANT_APPS/',project_name)
+project_metadata_dir = paste0(metadata_dir,'/GRANT_APPS/',project_name)
 
-project_result_dir = paste0(result_dir,'/PROJECTS/',project_name,'/')
-dir.create(project_result_dir)
+project_result_dir = paste0(result_dir,'/GRANT_APPS/',project_name,'/')
+# dir.create(project_result_dir)
 
-exp_matrix_dir = paste0(data_dir,"/PROJECTS/",project_name,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name,"/")
+exp_matrix_dir = paste0(data_dir,"/GRANT_APPS/",project_name,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name,"/")
 
-comparison_list_txt = paste0(project_metadata_dir,'/BULK_RNA_SEQ/BATCH_2024_04/Comparisons.BATCH_',batch_name,'.txt') 
+comparison_list_txt = paste0(project_metadata_dir,'/Comparisons.BATCH_',batch_name,'.txt') 
 
-sample_annotation_txt = paste0(project_metadata_dir,'/BULK_RNA_SEQ/BATCH_2024_04/Sample_Annotation.BATCH_',batch_name'.txt') 
+sample_annotation_txt = paste0(project_metadata_dir,'/Sample_Annotation.BATCH_',batch_name,'.txt') 
 fpkm.rds = paste0(project_data_dir,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name,"/FPKM_Matrix.All_genes.rds")
-read_count.rds = paste0(project_data_dir,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name,"/Read_count_matrix.All_genes.rds")
+read_count.rds = paste0(project_data_dir,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name,"/Read_Count_Matrix.All_genes.rds")
 
 df.comparisons = read.table(comparison_list_txt, sep = '\t', header = T)
 
