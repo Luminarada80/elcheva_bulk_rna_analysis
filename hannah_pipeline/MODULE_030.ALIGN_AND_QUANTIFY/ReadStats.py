@@ -158,89 +158,115 @@ def sum_cigar_N(op_tuples):
             total += length
     return total
 
+import os
+
+def parse_bed_line_auto(line):
+    """Accept BED12 or BED6.
+       Returns: (chrom, exon_blocks, intron_blocks)
+       - BED12: derive exons from blockSizes/blockStarts, introns between blocks
+       - BED6: treat each line as a single exon block; no introns
+    """
+    fields = line.rstrip("\n").split("\t")
+    if len(fields) >= 12:
+        chrom = fields[0]
+        tx_start = int(fields[1])
+        block_sizes = [int(x) for x in fields[10].strip(",").split(",") if x]
+        block_starts = [int(x) for x in fields[11].strip(",").split(",") if x]
+        if len(block_sizes) != len(block_starts):
+            raise ValueError("BED12 blockSizes/blockStarts length mismatch.")
+        exon_blocks = [(tx_start + rs, tx_start + rs + bs)
+                       for bs, rs in zip(block_sizes, block_starts)]
+        intron_blocks = [(exon_blocks[i][1], exon_blocks[i+1][0])
+                         for i in range(len(exon_blocks)-1)]
+        return chrom, exon_blocks, intron_blocks
+    elif len(fields) >= 3:
+        chrom = fields[0]
+        start = int(fields[1]); end = int(fields[2])
+        return chrom, [(start, end)], []  # BED6: single exon; no introns
+    else:
+        raise ValueError("BED line has fewer than 3 columns.")
+
 def main():
     args = parse_args()
     t1 = time.time()
 
-    # Build exon/intron interval indexes from BED12
-    exon_index = defaultdict(list)   # chrom -> [(start,end), ...]
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
+
+    # Build exon/intron interval indexes from BED (auto-detect 12 vs 6)
+    exon_index = defaultdict(list)
     intron_index = defaultdict(list)
 
+    print(f"[INFO] Reading BED: {args.bed}")
+    bed12_count = 0; bed6_count = 0
     with open(args.bed, "r") as bedf:
         for line in bedf:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            chrom, exons, introns = bed12_to_blocks(line)
+            try:
+                chrom, exons, introns = parse_bed_line_auto(line)
+            except Exception as e:
+                print(f"[WARN] Skipping BED line due to parse error: {e}")
+                continue
             if should_skip_chrom(chrom, args.skip_chr):
                 continue
-            # accumulate unique blocks (optional; most BEDs already have unique blocks per transcript)
-            for blk in exons:
-                exon_index[chrom].append(blk)
-            for blk in introns:
-                intron_index[chrom].append(blk)
+            # Heuristic counts
+            if len(introns) > 0:
+                bed12_count += 1
+            else:
+                bed6_count += 1
+            exon_index[chrom].extend(exons)
+            intron_index[chrom].extend(introns)
 
-    # deduplicate & sort
+    # Deduplicate & sort
     for chrom in list(exon_index.keys()):
         exon_index[chrom] = sorted(set(exon_index[chrom]))
     for chrom in list(intron_index.keys()):
         intron_index[chrom] = sorted(set(intron_index[chrom]))
 
-    # build speed indices
+    print(f"[INFO] BED parsed. Chromosomes with exons: {len(exon_index)}")
+    if sum(len(v) for v in intron_index.values()) == 0:
+        print("[INFO] No introns detected (BED6 input or single-exon transcripts).")
+
+    # Build speed indices
     exon_speed = build_speed_index(exon_index, args.division)
     intron_speed = build_speed_index(intron_index, args.division)
 
-    # free large temporary structures from original script (no-op here but keep parity)
     gc.collect()
 
-    # Open BAM
+    # Ensure BAM index exists; create if missing
+    bai = args.bam + ".bai"
+    if not os.path.exists(bai):
+        print(f"[INFO] Indexing BAM (creating {bai}) ...")
+        pysam.index(args.bam)
+
+    print(f"[INFO] Scanning BAM: {args.bam}")
     bam = pysam.AlignmentFile(args.bam, "rb")
 
-    exon_num = 0
-    intron_num = 0
-    junction_num = 0
-    all_num = 0
+    exon_num = intron_num = junction_num = all_num = 0
 
-    # Iterate reads
     for read in bam.fetch(until_eof=False):
-        # Skip unmapped/secondary/supplementary
         if read.is_unmapped or read.is_secondary or read.is_supplementary:
             continue
 
         ref_id = read.reference_id
         if ref_id < 0:
-            continue  # safety
+            continue
         chrom = bam.get_reference_name(ref_id)
         if should_skip_chrom(chrom, args.skip_chr):
             continue
 
         all_num += 1
 
-        # Junction: sum 'N' operations in CIGAR
         n_skip = sum_cigar_N(read.cigartuples)
         if n_skip >= args.junction_min_skip:
             junction_num += 1
 
-        # Coordinates for overlap test
-        read_left = read.reference_start  # 0-based left-most ref coordinate
-        # Use query-aligned length; if None, fall back to aligned_length
-        qlen = read.query_alignment_length if read.query_alignment_length is not None else read.query_length
-        if qlen is None:
-            # last resort: compute from CIGAR (M,=,X,I,D contribute differently; but for a window,
-            # we mainly need a span—use reference span)
-            read_right = read.reference_end
-        else:
-            # convert to a half-open end; for overlap logic we use reference end instead (safer)
-            read_right = read.reference_end
+        read_left = read.reference_start
+        read_right = read.reference_end or read_left  # safe fallback
 
-        # If we lack a reference end for some reason, fallback to left + qlen
-        if read_right is None:
-            read_right = read_left + (qlen or 0)
-
-        # Exon / intron classification
-        at_exon = False
-        at_intron = False
-
+        at_exon = at_intron = False
         if chrom in exon_index and exon_index[chrom]:
             s, e = pick_sublist(chrom, read_left, exon_speed)
             if s < e:
@@ -255,7 +281,6 @@ def main():
             exon_num += 1
         elif at_intron:
             intron_num += 1
-        # else: intergenic (counted later)
 
     bam.close()
     t2 = time.time()
@@ -270,6 +295,4 @@ def main():
         out.write(f"Intergenic Reads : {intergenic}\n")
         out.write(f"Number of uniquely mapped reads : {all_num}\n")
 
-
-if __name__ == "__main__":
-    sys.exit(main())
+    print(f"[OK] Wrote: {args.output}")

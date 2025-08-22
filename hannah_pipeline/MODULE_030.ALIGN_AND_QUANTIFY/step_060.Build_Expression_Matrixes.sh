@@ -1,11 +1,11 @@
 project_name=2025.NYNRIN.DOD.ELCHEVA
 batch_name="2025_01"
 
-batch_fpkm_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/FPKM/${batch_name}/INDIVIDUAL_SAMPLES/
-batch_read_count_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/READ_COUNTS/${batch_name}/INDIVIDUAL_SAMPLES/
+batch_fpkm_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/FPKM/${batch_name}/INDIVIDUAL_SAMPLES/
+batch_read_count_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/READ_COUNTS/${batch_name}/INDIVIDUAL_SAMPLES/
 
 
-batch_matrix_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/${batch_name}/
+batch_matrix_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/$project_name/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/${batch_name}/
 mkdir -p $batch_matrix_dir
 
 module load R

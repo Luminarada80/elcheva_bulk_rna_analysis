@@ -5,7 +5,7 @@ library(data.table)
 project_name='2025.NYNRIN.DOD.ELCHEVA'
 batch_name='2025_01'
 
-exp_matrix_dir = paste0("/gpfs/Labs/Uzun/DATA/PROJECTS/",project_name,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name)
+exp_matrix_dir = paste0("/gpfs/Labs/Uzun/DATA/GRANT_APPS/",project_name,"/BULK_RNA_SEQ/GENE_EXPRESSION_MATRICES/",batch_name)
 
 data_type = 'FPKM'
 #data_type = 'Read_Count'
