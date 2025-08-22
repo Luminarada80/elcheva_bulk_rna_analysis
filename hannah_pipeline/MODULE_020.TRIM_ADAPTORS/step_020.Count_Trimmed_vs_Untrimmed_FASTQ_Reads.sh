@@ -1,8 +1,8 @@
 project_name=2025.NYNRIN.DOD.ELCHEVA
 batch_name=2025_01
 
-fastq_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/FASTQ_FILES/RAW/BATCH_$batch_name/
-trimmed_dir=/gpfs/Labs/Uzun/DATA/PROJECTS/$project_name/FASTQ_FILES.TRIMMED/$batch_name/
+raw_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/RAW/BATCH_${batch_name}
+trim_fastq_dir=/gpfs/Labs/Uzun/DATA/GRANT_APPS/${project_name}/FASTQ_FILES/FASTQ_FILES.TRIMMED/BATCH_${batch_name}
 
 # Output directory
 output_dir=/gpfs/Labs/Uzun/RESULTS/PROJECTS/$project_name/READ_COUNTS_TRIMMED/${batch_name}/
