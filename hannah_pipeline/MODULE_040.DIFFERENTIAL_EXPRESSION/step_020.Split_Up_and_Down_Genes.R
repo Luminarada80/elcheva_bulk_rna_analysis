@@ -17,10 +17,10 @@ plot_dir = result_dir
 gene_annot_dir = paste0(data_dir,'/GENOMES/ANNOTATION/HUMAN/HG38/GENE_ANNOT')
 biomart_rds =  paste0(gene_annot_dir,"/Biomart_Gene_Table.Clean.rds")
 
-project_data_dir = paste0(data_dir,'/PROJECTS/',project_name)
-project_metadata_dir = paste0(metadata_dir,'/PROJECTS/',project_name)
+project_data_dir = paste0(data_dir,'/GRANT_APPS/',project_name)
+project_metadata_dir = paste0(metadata_dir,'/GRANT_APPS/',project_name)
 
-project_result_dir = paste0(result_dir,'/PROJECTS/',project_name)
+project_result_dir = paste0(result_dir,'/GRANT_APPS/',project_name)
 dea_result_dir = paste0(project_result_dir,'/DIFFERENTIAL_EXPRESSION/',batch_name,'/FPKM_GT_ONE_IN_AT_LEAST_TWO_SAMPLES_IN_EITHER_GROUP/glmQLFTest')
 
 gene_type = "coding"
@@ -78,6 +78,30 @@ split_rds = paste0(dea_result_dir, '/DE_Results.Significantly_DE_', gene_type,
 saveRDS(result_list_new, split_rds)
 print(split_rds)
 
+
+sanitize_excel_sheet_names <- function(x, max_len = 31) {
+  # remove illegal characters : \ / ? * [ ]
+  x <- gsub("[:\\\\/?*\\[\\]]", "-", x, perl = TRUE)
+  # trim whitespace
+  x <- trimws(x)
+  # truncate
+  x <- substr(x, 1, max_len)
+
+  # ensure uniqueness by suffixing _2, _3, ...
+  counts <- ave(seq_along(x), x, FUN = seq_along)
+  dup_idx <- counts > 1
+  if (any(dup_idx)) {
+    # leave room for suffix like _12, etc.
+    suffix <- paste0("_", counts[dup_idx])
+    room   <- pmax(0, max_len - nchar(suffix))
+    base   <- substr(x[dup_idx], 1, room)
+    x[dup_idx] <- paste0(base, suffix)
+  }
+  x
+}
+
+# apply to your list names
+names(result_list_new) <- sanitize_excel_sheet_names(names(result_list_new))
 split_xlsx = paste0(dea_result_dir, '/DE_Results.Significantly_DE_', gene_type,
                    '_genes.FDR_',FDR_threshold, '.FC_',FC_threshold,'.Split.xlsx')
 write.xlsx(result_list_new, split_xlsx)
