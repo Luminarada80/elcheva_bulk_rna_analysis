@@ -61,41 +61,41 @@ do
   # echo "srun hostname">> $job_file
   # echo ".  /etc/profile.d/modules.sh">> $job_file
 
-  # #STAR Align
-  # echo "echo Running STAR for alignment.">> $job_file
-  # echo "cd $batch_fastq_dir">> $job_file
-  # echo "module load STAR/2.7.3a">> $job_file
-  # echo "STAR --genomeDir $genome_index_dir \\">> $job_file
-  # echo "--runThreadN 8 \\">> $job_file
-  # echo "--readFilesIn ${sample_name}_R1_paired.fastq.gz ${sample_name}_R2_paired.fastq.gz \\">> $job_file
-  # echo "--outFileNamePrefix $batch_bam_dir/${sample_name}_ \\">> $job_file
-  # echo "--outSAMtype BAM SortedByCoordinate \\">> $job_file
-  # echo "--outSJfilterReads Unique \\">> $job_file
-  # echo "--readFilesCommand zcat \\">> $job_file
-  # echo "--outSAMattributes Standard ">> $job_file
-  # echo "echo Alignment completed.">> $job_file
+  #STAR Align
+  echo "echo Running STAR for alignment.">> $job_file
+  echo "cd $batch_fastq_dir">> $job_file
+  echo "module load STAR/2.7.3a">> $job_file
+  echo "STAR --genomeDir $genome_index_dir \\">> $job_file
+  echo "--runThreadN 8 \\">> $job_file
+  echo "--readFilesIn ${sample_name}_R1_unpaired.fastq.gz \\">> $job_file
+  echo "--outFileNamePrefix $batch_bam_dir/${sample_name}_ \\">> $job_file
+  echo "--outSAMtype BAM SortedByCoordinate \\">> $job_file
+  echo "--outSJfilterReads Unique \\">> $job_file
+  echo "--readFilesCommand zcat \\">> $job_file
+  echo "--outSAMattributes Standard ">> $job_file
+  echo "echo Alignment completed.">> $job_file
 
-  # #BAM index
-  # echo "echo Building BAM index.">> $job_file
-  # echo "cd $batch_bam_dir">> $job_file
-  # echo "module load samtools/1.10.0">> $job_file
-  # echo "samtools index ${sample_name}_Aligned.sortedByCoord.out.bam">> $job_file
-  # echo "echo Index built.">> $job_file
+  #BAM index
+  echo "echo Building BAM index.">> $job_file
+  echo "cd $batch_bam_dir">> $job_file
+  echo "module load samtools/1.10.0">> $job_file
+  echo "samtools index ${sample_name}_Aligned.sortedByCoord.out.bam">> $job_file
+  echo "echo Index built.">> $job_file
 
-  # # Filter unique reads
-  # echo "cd $batch_bam_dir">> $job_file
-  # echo "mkdir -p TEMP_SORTING/${sample_name}/">> $job_file
-  # echo "module load samtools/1.10.0">> $job_file
-  # echo "samtools view -bh -q 255 ${sample_name}_Aligned.sortedByCoord.out.bam > ${sample_name}_Aligned.bam" >> $job_file	
+  # Filter unique reads
+  echo "cd $batch_bam_dir">> $job_file
+  echo "mkdir -p TEMP_SORTING/${sample_name}/">> $job_file
+  echo "module load samtools/1.10.0">> $job_file
+  echo "samtools view -bh -q 255 ${sample_name}_Aligned.sortedByCoord.out.bam > ${sample_name}_Aligned.bam" >> $job_file	
 
-  # #Compute FPKM with Cufflinks
-  # mkdir -p $batch_fpkm_dir/$sample_name
-  # echo "echo Running Cufflinks for FPKM.">> $job_file
-  # echo "module load cufflinks/2.2.1">> $job_file
-  # echo "rm -r $batch_fpkm_dir/$sample_name/">> $job_file
-  # echo "cufflinks -p 8 --library-type fr-firststrand  -o $batch_fpkm_dir/$sample_name/  -G $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam" >> $job_file
-  # echo "python /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/Select_Greater_FPKM.py $batch_fpkm_dir/$sample_name/genes.fpkm_tracking > $batch_fpkm_dir/$sample_name/genes.fpkm_tracking.max.txt" >> $job_file
-  # echo "echo FPKM computed.">> $job_file
+  #Compute FPKM with Cufflinks
+  mkdir -p $batch_fpkm_dir/$sample_name
+  echo "echo Running Cufflinks for FPKM.">> $job_file
+  echo "module load cufflinks/2.2.1">> $job_file
+  echo "rm -r $batch_fpkm_dir/$sample_name/">> $job_file
+  echo "cufflinks -p 8 --library-type fr-secondstrand  -o $batch_fpkm_dir/$sample_name/  -G $gene_annot_gtf $batch_bam_dir/${sample_name}_Aligned.bam" >> $job_file
+  echo "python /gpfs/Labs/Uzun/SCRIPTS/GRANT_APPS/2025.NYNRIN.DOD.ELCHEVA/elcheva_bulk_rna_analysis/hannah_pipeline/MODULE_030.ALIGN_AND_QUANTIFY/Select_Greater_FPKM.py $batch_fpkm_dir/$sample_name/genes.fpkm_tracking > $batch_fpkm_dir/$sample_name/genes.fpkm_tracking.max.txt" >> $job_file
+  echo "echo FPKM computed.">> $job_file
 
   # Compute integer read counts with featureCounts (CLI from Subread)
   echo "echo 'Running featureCounts (CLI) for read counts.'" >> $job_file
@@ -107,11 +107,11 @@ do
 
   # gene-level counts
   echo "mkdir -p $batch_read_count_dir/GENE_LEVEL" >> $job_file
-  echo "featureCounts -T 8 -p -s 0 -a $gene_annot_gtf -t exon -g gene_id -o $batch_read_count_dir/GENE_LEVEL/${sample_name}.gene.txt \$BAM_FILE" >> $job_file
+  echo "featureCounts -T 8 -p -s 1 -a $gene_annot_gtf -t exon -g gene_id -o $batch_read_count_dir/GENE_LEVEL/${sample_name}.gene.txt \$BAM_FILE" >> $job_file
 
   # transcript-level counts
   echo "mkdir -p $batch_read_count_dir/TRANSCRIPT_LEVEL" >> $job_file
-  echo "featureCounts -T 8 -p -s 0 -a $gene_annot_gtf -t exon -g transcript_id -o $batch_read_count_dir/TRANSCRIPT_LEVEL/${sample_name}.tx.txt \$BAM_FILE" >> $job_file
+  echo "featureCounts -T 8 -p -s 1 -a $gene_annot_gtf -t exon -g transcript_id -o $batch_read_count_dir/TRANSCRIPT_LEVEL/${sample_name}.tx.txt \$BAM_FILE" >> $job_file
 
   echo "echo Read count computed." >> $job_file
 

@@ -1,7 +1,7 @@
 library(venn)
 library(openxlsx)
 
-round_no = '1_and_2'
+round_no = '2025_01'
 
 
 research_dir = '/gpfs/Labs/Uzun/'
@@ -14,19 +14,19 @@ result_dir = paste0(research_dir, '/RESULTS/')
 plot_dir = result_dir
 
 
-project_name = '/2022.IMP.IRINA/'
+project_name = '/2025.NYNRIN.DOD.ELCHEVA/'
 
 
-project_data_dir = paste0(data_dir, '/PROJECTS/', project_name, '/')
-project_metadata_dir = paste0(metadata_dir, '/PROJECTS/',project_name, '/')
+project_data_dir = paste0(data_dir, '/GRANT_APPS/', project_name, '/')
+project_metadata_dir = paste0(metadata_dir, '/GRANT_APPS/',project_name, '/')
 
-project_result_dir = paste0(result_dir, '/PROJECTS/',  project_name, '/')
+project_result_dir = paste0(result_dir, '/GRANT_APPS/',  project_name, '/')
 dir.create(project_result_dir)
 
 plot_dir = paste0(project_result_dir, '/PLOTS/')
 dir.create(plot_dir)
 
-comparison_list_txt = paste0(project_metadata_dir, '/Comparisons.Round_',round_no,'.txt') 
+comparison_list_txt = paste0(project_metadata_dir, '/Comparisons.BATCH_',round_no,'.txt') 
 df.comparisons = read.table(comparison_list_txt, sep = '\t', header = T)
 rownames(df.comparisons) = df.comparisons$Comparison_Id
 
