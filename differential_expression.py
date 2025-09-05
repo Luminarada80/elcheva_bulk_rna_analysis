@@ -318,7 +318,7 @@ if __name__ == "__main__":
         # Rank the genes based on their stat value
         ranking = deseq_stat_df[['Symbol', 'stat']].dropna().sort_values('stat', ascending = False).drop_duplicates()
 
-        # Log1p normalize the normalized counts, save as a separate layer
+        # Log1p normalize the counts, save as a separate layer
         dds.layers['log1p'] = np.log1p(dds.layers['normed_counts'])
         
         # Extract only the significant genes from the DeseqDataSet

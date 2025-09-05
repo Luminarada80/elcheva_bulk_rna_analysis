@@ -38,7 +38,7 @@ combined_counts <- data.frame(
            "Upregulated", "Downregulated", 
            "Upregulated", "Downregulated",
            "Upregulated", "Downregulated"),
-  Count = c(0, 0, 0, 0, 0, 3, 0, 9)
+  Count = c(0, 0, 0, 0, 0, 5, 8, 20)
 )
 
 # Plot using ggplot2

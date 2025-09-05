@@ -11,7 +11,6 @@ set -euo pipefail
 source activate bioinformatics
 module load STAR/2.7.3a
 module load fastqc
-module load cufflinks/2.2.1
 module load samtools/1.13
 module load subread/2.0.6
 
@@ -85,11 +84,16 @@ STAR --genomeDir "$genome_index_dir" \
      --outFileNamePrefix "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_" \
      --outSAMtype BAM SortedByCoordinate \
      --limitBAMsortRAM 16000000000 \
+     --outFilterMultimapNmax 1 \
      --outSJfilterReads Unique \
      --outSAMattributes Standard \
      --outSAMattrRGline ID:$SAMPLE_NAME SM:$SAMPLE_NAME PL:ILLUMINA
 
 echo "      STAR finished running!"
+
+samtools index "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.sortedByCoord.out.bam"
+samtools flagstat "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.sortedByCoord.out.bam" > "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}.flagstat.txt"
+samtools idxstats "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.sortedByCoord.out.bam" > "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}.idxstats.txt"
 
 # Build a BAM index
 echo "Building BAM index"
@@ -101,35 +105,19 @@ echo "    - Saving to Output Directory/04_star_alignment/${SAMPLE_NAME}_Aligned.
 samtools view -bh -q 255 ${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.sortedByCoord.out.bam \
     > ${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.bam
 
-# Compute FPKM with Cufflinks
-echo "Running Cufflinks for FPKM"
-echo "    - Saving to Output Directory/05_cufflinks_fpkm"
-
-mkdir -p ${OUTPUT_DIR}/05_cufflinks_fpkm
-cufflinks -p 8 \
-    --library-type fr-secondstrand \
-    -o ${OUTPUT_DIR}/05_cufflinks_fpkm/ \
-    -G $gene_annot_gtf \
-    ${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.bam
-
-echo "      FPKM computed"
-
 # Compute integer read counts with featureCounts
 echo "Running featureCounts for read counts"
 echo "    - Saving to Output Directory/06_featureCounts"
 
-mkdir -p "${OUTPUT_DIR}/06_featureCounts"
+mkdir -p "${RESULTS_DIR}/gene_counts"
 featureCounts \
     -T 8 \
     -s 1 \
     -a "$gene_annot_gtf" \
     -t exon \
     -g gene_id \
-    -o "${OUTPUT_DIR}/06_featureCounts/${SAMPLE_NAME}_gene_counts.txt" \
+    -o "${RESULTS_DIR}/gene_counts/${SAMPLE_NAME}_gene_counts.txt" \
     "${OUTPUT_DIR}/04_star_alignment/${SAMPLE_NAME}_Aligned.bam"
-
-mkdir -p ${RESULTS_DIR}/gene_counts
-mv "${OUTPUT_DIR}/06_featureCounts/${SAMPLE_NAME}_gene_counts.txt" "${RESULTS_DIR}/gene_counts/${SAMPLE_NAME}_gene_counts.txt"
 
 echo "featureCounts done."
 

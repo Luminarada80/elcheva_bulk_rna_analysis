@@ -61,7 +61,7 @@ do
   # echo "srun hostname">> $job_file
   # echo ".  /etc/profile.d/modules.sh">> $job_file
 
-  #STAR Align
+  # #STAR Align
   echo "echo Running STAR for alignment.">> $job_file
   echo "cd $batch_fastq_dir">> $job_file
   echo "module load STAR/2.7.3a">> $job_file
@@ -107,11 +107,11 @@ do
 
   # gene-level counts
   echo "mkdir -p $batch_read_count_dir/GENE_LEVEL" >> $job_file
-  echo "featureCounts -T 8 -p -s 1 -a $gene_annot_gtf -t exon -g gene_id -o $batch_read_count_dir/GENE_LEVEL/${sample_name}.gene.txt \$BAM_FILE" >> $job_file
+  echo "featureCounts -T 8 -s 1 -a $gene_annot_gtf -t exon -g gene_id -o $batch_read_count_dir/GENE_LEVEL/${sample_name}.gene.txt \$BAM_FILE" >> $job_file
 
   # transcript-level counts
   echo "mkdir -p $batch_read_count_dir/TRANSCRIPT_LEVEL" >> $job_file
-  echo "featureCounts -T 8 -p -s 1 -a $gene_annot_gtf -t exon -g transcript_id -o $batch_read_count_dir/TRANSCRIPT_LEVEL/${sample_name}.tx.txt \$BAM_FILE" >> $job_file
+  echo "featureCounts -T 8 -s 1 -a $gene_annot_gtf -t exon -g transcript_id -o $batch_read_count_dir/TRANSCRIPT_LEVEL/${sample_name}.tx.txt \$BAM_FILE" >> $job_file
 
   echo "echo Read count computed." >> $job_file
 
